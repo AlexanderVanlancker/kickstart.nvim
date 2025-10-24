@@ -572,6 +572,12 @@ require('lazy').setup({
           --  the definition of its *type*, not where it was *defined*.
           map('grt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
 
+          -- Additional LSP shortcuts as requested
+          map('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
+          map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+          map('gy', vim.lsp.buf.type_definition, '[G]oto t[Y]pe Definition')
+          map('gi', vim.lsp.buf.implementation, '[G]oto [I]mplementation')
+
           -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
           ---@param client vim.lsp.Client
           ---@param method vim.lsp.protocol.Method
@@ -716,11 +722,12 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'csharpier', -- Used to format C# code
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
-        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
+        ensure_installed = { 'csharp_ls' },
         automatic_installation = false,
         handlers = {
           function(server_name)
@@ -733,6 +740,23 @@ require('lazy').setup({
           end,
         },
       }
+
+      -- Custom LSP configuration for C# - Disable OmniSharp and enable Roslyn
+      -- 4. Setup LSP with enhanced capabilities
+      local capabilities = require('cmp_nvim_lsp').default_capabilities()
+
+      local on_attach = function(client, bufnr)
+        local opts = { buffer = bufnr, noremap = true, silent = true }
+        vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+        vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+        vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+        vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+      end
+
+      require('lspconfig').csharp_ls.setup({
+        on_attach = on_attach,
+        capabilities = capabilities, -- Enhanced with cmp_nvim_lsp
+      })
     end,
   },
 
@@ -768,6 +792,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        cs = { 'csharpier' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -876,6 +901,139 @@ require('lazy').setup({
     },
   },
 
+  { -- nvim-cmp for enhanced autocompletion
+    'hrsh7th/nvim-cmp',
+    event = 'InsertEnter',
+    dependencies = {
+      'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-buffer',
+      'hrsh7th/cmp-path',
+      'L3MON4D3/LuaSnip',
+      'saadparwaiz1/cmp_luasnip',
+    },
+    config = function()
+      local cmp = require('cmp')
+      local luasnip = require('luasnip')
+
+      cmp.setup({
+        snippet = {
+          expand = function(args)
+            luasnip.lsp_expand(args.body)
+          end,
+        },
+        mapping = cmp.mapping.preset.insert({
+          ['<C-Space>'] = cmp.mapping.complete(),
+          ['<CR>'] = cmp.mapping.confirm({ select = true }),
+          ['<Tab>'] = cmp.mapping.select_next_item(),
+          ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          ['<C-e>'] = cmp.mapping.abort(),
+        }),
+        sources = {
+          { name = 'nvim_lsp' },
+          { name = 'luasnip' },
+          { name = 'buffer' },
+          { name = 'path' },
+        },
+      })
+    end,
+  },
+
+  { -- Hop for quick navigation
+    'phaazon/hop.nvim',
+    branch = 'v2', -- optional but strongly recommended
+    config = function()
+      require('hop').setup({ keys = 'etovxqpdygfblzhckisuran' })
+      
+      -- Keymaps for hop
+      local hop = require('hop')
+      local directions = require('hop.hint').HintDirection
+      
+      vim.keymap.set('', 'f', function()
+        hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
+      end, { remap = true })
+      
+      vim.keymap.set('', 'F', function()
+        hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
+      end, { remap = true })
+      
+      vim.keymap.set('', 't', function()
+        hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
+      end, { remap = true })
+      
+      vim.keymap.set('', 'T', function()
+        hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
+      end, { remap = true })
+      
+      vim.keymap.set('', '<leader>j', function()
+        hop.hint_lines_skip_whitespace()
+      end, { desc = 'Hop to line' })
+      
+      vim.keymap.set('', '<leader>k', function()
+        hop.hint_lines_skip_whitespace({ direction = directions.BEFORE_CURSOR })
+      end, { desc = 'Hop to line (reverse)' })
+      
+      vim.keymap.set('', '<leader>w', function()
+        hop.hint_words()
+      end, { desc = 'Hop to word' })
+      
+      vim.keymap.set('', '<leader>e', function()
+        hop.hint_words({ direction = directions.BEFORE_CURSOR })
+      end, { desc = 'Hop to word (reverse)' })
+    end,
+  },
+
+  { -- Overseer for task management
+    'stevearc/overseer.nvim',
+    keys = {
+      { '<leader>or', '<cmd>OverseerRun<cr>', desc = '[O]verseer [R]un' },
+      { '<leader>ot', '<cmd>OverseerToggle<cr>', desc = '[O]verseer [T]oggle' },
+      { '<leader>oq', '<cmd>OverseerQuickAction<cr>', desc = '[O]verseer [Q]uick Action' },
+      { '<leader>ol', '<cmd>OverseerLoadBundle<cr>', desc = '[O]verseer [L]oad Bundle' },
+      { '<leader>os', '<cmd>OverseerSaveBundle<cr>', desc = '[O]verseer [S]ave Bundle' },
+    },
+    config = function()
+      require('overseer').setup({
+        -- Configure overseer to use your custom templates
+        templates = { "builtin", "core", "web", "other", "leaderboard" },
+        task_list = {
+          direction = 'bottom',
+          min_height = 10,
+          max_height = 20,
+          default_detail = 1,
+          bindings = {
+            ['q'] = 'Close',
+            ['<cr>'] = 'RunAction',
+            ['<c-e>'] = 'Edit',
+            ['o'] = 'Open',
+            ['<c-v>'] = 'OpenVsplit',
+            ['<c-s>'] = 'OpenSplit',
+            ['<c-f>'] = 'OpenFloat',
+            ['<c-q>'] = 'OpenQuickFix',
+            ['<c-l>'] = 'IncreaseDetail',
+            ['<c-h>'] = 'DecreaseDetail',
+            ['R'] = 'Restart',
+            ['S'] = 'Stop',
+            ['D'] = 'Dispose',
+            ['<leader>r'] = 'Restart',
+            ['<leader>s'] = 'Stop',
+            ['<leader>d'] = 'Dispose',
+          },
+        },
+        -- Auto-close task list when task completes
+        auto_close_on_success = true,
+        -- Show task output in a floating window
+        auto_scroll = {
+          enabled = true,
+          direction = 'down',
+          min_height = 10,
+          max_height = 20,
+        },
+      })
+    end,
+  },
+
   { -- You can easily change to a different colorscheme.
     -- Change the name of the colorscheme plugin below, and then
     -- change the command in the config to whatever the name of that colorscheme is.
@@ -938,13 +1096,14 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'c_sharp', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
