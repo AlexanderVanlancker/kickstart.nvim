@@ -22,7 +22,8 @@
           nodejs_22     # Node.js LTS version
 
           # LSP servers
-          lua-language-server      # Lua LSP
+          lua-language-server                      # Lua LSP
+          nodePackages.typescript-language-server  # TypeScript/JavaScript LSP
           # Note: C# LSP (csharp-ls) is not available on Apple Silicon
           # Use OmniSharp instead: dotnet tool install -g csharp-ls
           # Or use omnisharp-roslyn via Mason or direct install
@@ -63,6 +64,7 @@
             echo ""
             echo "LSP servers:"
             echo "  - lua-language-server"
+            echo "  - typescript-language-server"
             echo ""
             echo "Install separately (not in nixpkgs for Apple Silicon):"
             echo "  - Angular: npm install -g @angular/language-server"

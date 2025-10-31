@@ -136,6 +136,22 @@ return {
 
       -- Define LSP servers to configure
       local servers = {
+        -- TypeScript Language Server (for .ts files)
+        ts_ls = {
+          -- Use project's TypeScript version if available
+          init_options = {
+            preferences = {
+              includeInlayParameterNameHints = 'all',
+              includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+              includeInlayFunctionParameterTypeHints = true,
+              includeInlayVariableTypeHints = true,
+              includeInlayPropertyDeclarationTypeHints = true,
+              includeInlayFunctionLikeReturnTypeHints = true,
+              includeInlayEnumMemberValueHints = true,
+            },
+          },
+        },
+
         -- Angular Language Server with proper TypeScript setup
         angularls = {
           -- The ngserver command needs to know where to find TypeScript
@@ -217,6 +233,14 @@ return {
           code_action = '💡',
           incoming = ' ',
           outgoing = ' ',
+        },
+        lightbulb = {
+          enable = false,  -- Disable the floating lightbulb (optional)
+          sign = false,
+        },
+        -- Key bindings for lspsaga windows
+        keys = {
+          quit = { 'q', '<ESC>' },
         },
       }
 

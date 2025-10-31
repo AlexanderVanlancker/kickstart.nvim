@@ -58,10 +58,11 @@ The Nix configuration provides:
 
 ### LSP Servers (Managed by Nix, no Mason!)
 - **lua-language-server** - Lua LSP for Neovim configuration
+- **typescript-language-server** - TypeScript/JavaScript LSP (handles go-to-definition for imports)
 
 ### LSP Servers (Install via package managers)
 Some LSP servers aren't available in nixpkgs for Apple Silicon:
-- **Angular Language Server** - Install via npm: `npm install -g @angular/language-server`
+- **Angular Language Server** - For Angular templates - Install via npm: `npm install -g @angular/language-server`
 - **C# Language Server** - Install via dotnet: `dotnet tool install -g csharp-ls`
 
 ### Formatters
