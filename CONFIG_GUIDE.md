@@ -141,7 +141,9 @@ Run `:Lazy update`
 Run `:Lazy`
 
 ### Installing Language Servers
-Run `:Mason` to see available language servers
+Language servers are managed by Nix (see `NIX_USAGE.md`). To add more:
+1. Edit `flake.nix` and add the LSP to `devDependencies`
+2. Add configuration in `lua/plugins/lsp.lua`
 
 ### Checking Health
 Run `:checkhealth` to diagnose issues
@@ -218,9 +220,10 @@ vim.keymap.set('n', '<leader>w', '<cmd>write<CR>', { desc = 'Save' })
 2. Check for errors with `:messages`
 
 ### LSP not working
-1. Run `:LspInfo` to see active servers
-2. Run `:Mason` to install language servers
-3. Check `:checkhealth`
+1. Make sure you're using the Nix environment: `nix develop`
+2. Run `:LspInfo` to see active servers
+3. Check the server is in PATH: `which lua-language-server`
+4. Check `:checkhealth`
 
 ### Angular LSP still failing
 1. Verify TypeScript is installed: `npm list -g typescript`

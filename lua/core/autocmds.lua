@@ -9,3 +9,13 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.hl.on_yank()
   end,
 })
+
+-- Angular filetype detection
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  desc = 'Detect Angular HTML templates',
+  group = vim.api.nvim_create_augroup('angular-filetype', { clear = true }),
+  pattern = { '*.component.html', '*.ng.html' },
+  callback = function()
+    vim.bo.filetype = 'htmlangular'
+  end,
+})

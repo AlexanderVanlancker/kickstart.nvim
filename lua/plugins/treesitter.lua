@@ -12,13 +12,19 @@ return {
       'bash',
       'c',
       'c_sharp',
+      'css',
       'diff',
       'html',
+      'javascript',
+      'jsdoc',
+      'json',
       'lua',
       'luadoc',
       'markdown',
       'markdown_inline',
       'query',
+      'tsx',
+      'typescript',
       'vim',
       'vimdoc',
     },
@@ -34,6 +40,11 @@ return {
     indent = {
       enable = true,
       disable = { 'ruby' },
+    },
+    -- Enable embedded language highlighting (for Angular templates)
+    context_commentstring = {
+      enable = true,
+      enable_autocmd = false,
     },
   },
 }

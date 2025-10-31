@@ -18,11 +18,6 @@ return {
   {
     'neovim/nvim-lspconfig',
     dependencies = {
-      -- Automatically install LSP servers
-      { 'mason-org/mason.nvim', opts = {} },
-      'mason-org/mason-lspconfig.nvim',
-      'WhoIsSethDaniel/mason-tool-installer.nvim',
-
       -- LSP status updates
       { 'j-hui/fidget.nvim', opts = {} },
 
@@ -139,26 +134,26 @@ return {
       -- Get completion capabilities from blink.cmp
       local capabilities = require('blink.cmp').get_lsp_capabilities()
 
-      -- Define LSP servers to install and configure
+      -- Define LSP servers to configure
       local servers = {
         -- Angular Language Server with proper TypeScript setup
         angularls = {
           -- The ngserver command needs to know where to find TypeScript
           -- We pass multiple locations for it to search
-          filetypes = { 'typescript', 'html', 'typescriptreact', 'typescript.tsx' },
+          filetypes = { 'typescript', 'html', 'typescriptreact', 'typescript.tsx', 'htmlangular' },
           cmd = {
             'ngserver',
             '--stdio',
             '--tsProbeLocations',
-            '/opt/homebrew/lib/node_modules',  -- Homebrew on Apple Silicon
-            '/usr/local/lib/node_modules',      -- Homebrew on Intel or manual install
+            '/opt/homebrew/lib/node_modules', -- Homebrew on Apple Silicon
+            '/usr/local/lib/node_modules', -- Homebrew on Intel or manual install
             '--ngProbeLocations',
             '/opt/homebrew/lib/node_modules',
             '/usr/local/lib/node_modules',
           },
           on_new_config = function(new_config, new_root_dir)
             -- Additional configuration to help Angular LSP find TypeScript
-            local util = require('lspconfig.util')
+            local util = require 'lspconfig.util'
 
             -- Try to find node_modules with TypeScript in the project
             local project_node_modules = util.path.join(new_root_dir, 'node_modules')
@@ -189,28 +184,17 @@ return {
             },
           },
         },
+
+        -- C# Language Server
+        csharp_ls = {},
       }
 
-      -- Install tools
-      local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, {
-        'stylua',     -- Lua formatter
-        'csharpier',  -- C# formatter
-      })
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
-
-      -- Setup LSP servers
-      require('mason-lspconfig').setup {
-        ensure_installed = { 'csharp_ls' },
-        automatic_installation = false,
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
-      }
+      -- Setup LSP servers manually
+      local lspconfig = require 'lspconfig'
+      for server_name, server_config in pairs(servers) do
+        server_config.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server_config.capabilities or {})
+        lspconfig[server_name].setup(server_config)
+      end
     end,
   },
 
@@ -223,7 +207,7 @@ return {
       'nvim-tree/nvim-web-devicons',
     },
     config = function()
-      require('lspsaga').setup({
+      require('lspsaga').setup {
         ui = {
           theme = 'round',
           border = 'rounded',
@@ -234,7 +218,7 @@ return {
           incoming = ' ',
           outgoing = ' ',
         },
-      })
+      }
 
       -- Keymaps
       vim.keymap.set('n', '<leader>ca', '<cmd>Lspsaga code_action<CR>', { desc = 'Code action' })

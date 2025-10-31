@@ -12,6 +12,24 @@ A starting point for Neovim that is:
 
 ## Installation
 
+### Quick Start with Nix (Recommended)
+
+This configuration includes a Nix flake that automatically provides all dependencies:
+
+```bash
+# Enter development shell with all tools
+nix develop
+
+# Then run nvim normally
+nvim
+```
+
+See [NIX_USAGE.md](NIX_USAGE.md) for detailed Nix setup instructions.
+
+LSP servers and formatters are managed by Nix - no Mason required!
+
+### Manual Installation
+
 ### Install Neovim
 
 Kickstart.nvim targets *only* the latest
