@@ -40,13 +40,25 @@ return {
       end, { desc = 'Hop to line (reverse)' })
 
       -- Jump to any word
-      vim.keymap.set('', '<leader>w', function()
+      vim.keymap.set('', 's', function()
         hop.hint_words()
       end, { desc = 'Hop to word' })
 
       vim.keymap.set('', '<leader>e', function()
         hop.hint_words({ direction = directions.BEFORE_CURSOR })
       end, { desc = 'Hop to word (reverse)' })
+    end,
+  },
+
+  -- Quick bookmarks and navigation
+  {
+    'otavioschwanck/arrow.nvim',
+    config = function()
+      require('arrow').setup({
+        show_icons = true,
+        leader_key = ';', -- Recommended to be a single key
+        buffer_leader_key = 'm', -- Per Buffer Mappings
+      })
     end,
   },
 }

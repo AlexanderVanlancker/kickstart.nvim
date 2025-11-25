@@ -11,4 +11,5 @@ return {
   "other.other",
   "other.user",
   "other.encryption",
+  "other.researcher-profile",
 }

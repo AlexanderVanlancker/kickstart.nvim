@@ -17,6 +17,8 @@ return {
             { "Run Identity" },
             { "Run Support" },
             { "Run User" },
+            { "Run Researcher Profile" },
+            { "Run Leaderboard API" },
           },
         },
       },

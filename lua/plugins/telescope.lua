@@ -19,6 +19,26 @@ return {
   },
   config = function()
     require('telescope').setup {
+      defaults = {
+        mappings = {
+          i = {
+            -- Ctrl + j/k for navigating up/down in insert mode
+            ['<C-j>'] = require('telescope.actions').move_selection_next,
+            ['<C-k>'] = require('telescope.actions').move_selection_previous,
+            -- Ctrl + h/l for horizontal scrolling in preview
+            ['<C-h>'] = require('telescope.actions').preview_scrolling_left,
+            ['<C-l>'] = require('telescope.actions').preview_scrolling_right,
+          },
+          n = {
+            -- Ctrl + j/k for navigating up/down in normal mode
+            ['<C-j>'] = require('telescope.actions').move_selection_next,
+            ['<C-k>'] = require('telescope.actions').move_selection_previous,
+            -- Ctrl + h/l for horizontal scrolling in preview
+            ['<C-h>'] = require('telescope.actions').preview_scrolling_left,
+            ['<C-l>'] = require('telescope.actions').preview_scrolling_right,
+          },
+        },
+      },
       extensions = {
         ['ui-select'] = {
           require('telescope.themes').get_dropdown(),
