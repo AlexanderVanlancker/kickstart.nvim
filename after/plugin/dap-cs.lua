@@ -62,6 +62,18 @@ function M.setup()
     },
     {
       type = 'coreclr',
+      name = 'launch - Intigriti.Core.Api',
+      request = 'launch',
+      program = '${workspaceFolder}/Api/Intigriti.Core.Api/bin/Debug/net10.0/Intigriti.Core.Api.dll',
+      cwd = '${workspaceFolder}/Api/Intigriti.Core.Api',
+      env = {
+        ASPNETCORE_ENVIRONMENT = 'Local',
+      },
+      console = 'integratedTerminal',
+      stopOnEntry = false,
+    },
+    {
+      type = 'coreclr',
       name = 'attach - netcoredbg',
       request = 'attach',
       processId = function()
@@ -69,24 +81,30 @@ function M.setup()
         return utils.pick_process({ filter = 'dotnet' })
       end,
     },
+    {
+      type = 'coreclr',
+      name = 'attach - Intigriti.Core.Api',
+      request = 'attach',
+      processId = function()
+        local utils = require('dap.utils')
+        return utils.pick_process({ filter = 'Intigriti.Core.Api' })
+      end,
+    },
   }
   
-  vim.keymap.set('n', '<leader>dc', function()
-    if require('dap').session() then
-      require('dap').continue()
-    else
-      local dll = M.get_dotnet_dll()
-      require('dap').run({
-        type = 'coreclr',
-        name = 'launch - netcoredbg',
-        request = 'launch',
-        program = dll,
-        cwd = vim.fn.getcwd(),
-        console = 'integratedTerminal',
-        stopOnEntry = false,
-      })
-    end
-  end, { desc = '[D]AP [C]ontinue / Launch .NET' })
+  vim.keymap.set('n', '<leader>dc', require('dap').continue, { desc = '[D]AP [C]ontinue / Launch' })
+  vim.keymap.set('n', '<leader>dC', function()
+    vim.fn.jobstart('dotnet build Api/Intigriti.Core.Api', {
+      cwd = vim.fn.getcwd(),
+      on_exit = function(_, code)
+        if code == 0 then
+          vim.notify('Build succeeded', vim.log.levels.INFO)
+        else
+          vim.notify('Build failed', vim.log.levels.ERROR)
+        end
+      end,
+    })
+  end, { desc = '[D]AP [C]ompile API' })
   
   vim.keymap.set('n', '<leader>db', require('dap').toggle_breakpoint, { desc = '[D]AP Toggle [B]reakpoint' })
   vim.keymap.set('n', '<leader>dB', function()
