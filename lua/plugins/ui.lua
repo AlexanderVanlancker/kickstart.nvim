@@ -107,6 +107,10 @@ return {
       { "<leader>fp", function() Snacks.picker.projects() end, desc = "Projects" },
       { "<leader>fr", function() Snacks.picker.recent() end, desc = "Recent" },
 
+      -- Copy file path
+      { "<leader>fP", function() vim.fn.setreg("+", vim.fn.expand("%:p")) end, desc = "Copy Absolute Path" },
+      { "<leader>fN", function() vim.fn.setreg("+", vim.fn.expand("%:t")) end, desc = "Copy Filename" },
+
       -- Git
       { "<leader>gb", function() Snacks.picker.git_branches() end, desc = "Git Branches" },
       { "<leader>gl", function() Snacks.picker.git_log() end, desc = "Git Log" },
