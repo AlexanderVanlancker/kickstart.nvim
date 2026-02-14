@@ -5,7 +5,7 @@ return {
       cmd = { "npm" },
       args = { "run", "start:company" },
       name = "Web Company",
-      cwd = "/Users/Alexander/intigriti/web/client-apps",
+      cwd = "/Users/Alexander/intigriti/web",
     }
   end,
 }

@@ -40,7 +40,7 @@ return {
       end, { desc = 'Hop to line (reverse)' })
 
       -- Jump to any word
-      vim.keymap.set('', 's', function()
+      vim.keymap.set('', '<leader>w', function()
         hop.hint_words()
       end, { desc = 'Hop to word' })
 
