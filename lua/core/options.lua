@@ -24,6 +24,10 @@ vim.schedule(function()
 end)
 
 -- Indentation
+vim.o.tabstop = 2             -- Tab displays as 2 spaces
+vim.o.shiftwidth = 2          -- Indent/outdent by 2 spaces
+vim.o.expandtab = true        -- Use spaces instead of tabs
+vim.o.softtabstop = 2         -- Insert 2 spaces when pressing tab
 vim.o.breakindent = true      -- Wrapped lines continue visually indented
 
 -- Undo history
@@ -55,3 +59,8 @@ vim.o.inccommand = 'split'
 
 -- Confirm before closing unsaved buffers
 vim.o.confirm = true
+
+-- Terminal shell configuration (fix for macOS zsh path)
+vim.o.shell = '/bin/zsh'
+vim.o.shellcmdflag = '-i -c'
+vim.o.shellredir = '&>'

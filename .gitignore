@@ -10,3 +10,6 @@ lazy-lock.json
 result
 .direnv/
 .envrc
+
+.claude/
+.opencode/
