@@ -14,16 +14,15 @@ return {
     },
   },
 
-  -- Main LSP configuration
-  {
-    'neovim/nvim-lspconfig',
-    dependencies = {
-      -- LSP status updates
-      { 'j-hui/fidget.nvim', opts = {} },
+  -- LSP status updates
+  { 'j-hui/fidget.nvim', opts = {} },
 
-      -- Completion support
-      'saghen/blink.cmp',
-    },
+  -- Main LSP configuration (using native nvim 0.11+ API, no lspconfig plugin needed)
+  {
+    dir = vim.fn.stdpath('config'),
+    name = 'native-lsp-config',
+    lazy = false,
+    priority = 100,
     config = function()
       -- Set TypeScript path for Angular Language Server
       -- Try Homebrew location first, fallback to /usr/local
@@ -131,87 +130,85 @@ return {
         },
       }
 
-      -- Get completion capabilities from blink.cmp
-      local capabilities = require('blink.cmp').get_lsp_capabilities()
+       -- Get completion capabilities from blink.cmp
+       local capabilities = require('blink.cmp').get_lsp_capabilities()
 
-      -- Define LSP servers to configure
-      local servers = {
-        -- TypeScript Language Server (for .ts files)
-        ts_ls = {
-          -- Use project's TypeScript version if available
-          init_options = {
-            preferences = {
-              includeInlayParameterNameHints = 'all',
-              includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayVariableTypeHints = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayEnumMemberValueHints = true,
-            },
-          },
-        },
+       -- Setup LSP servers using the new vim.lsp.config API (nvim 0.11+)
+       local servers = {
+         -- TypeScript Language Server (for .ts files)
+         {
+           name = 'ts_ls',
+           config = {
+             cmd = { 'typescript-language-server', '--stdio' },
+             filetypes = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
+             init_options = {
+               preferences = {
+                 includeInlayParameterNameHints = 'all',
+                 includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+                 includeInlayFunctionParameterTypeHints = true,
+                 includeInlayVariableTypeHints = true,
+                 includeInlayPropertyDeclarationTypeHints = true,
+                 includeInlayFunctionLikeReturnTypeHints = true,
+                 includeInlayEnumMemberValueHints = true,
+               },
+             },
+           },
+         },
 
-        -- Angular Language Server with proper TypeScript setup
-        angularls = {
-          -- The ngserver command needs to know where to find TypeScript
-          -- We pass multiple locations for it to search
-          filetypes = { 'typescript', 'html', 'typescriptreact', 'typescript.tsx', 'htmlangular' },
-          cmd = {
-            'ngserver',
-            '--stdio',
-            '--tsProbeLocations',
-            '/opt/homebrew/lib/node_modules', -- Homebrew on Apple Silicon
-            '/usr/local/lib/node_modules', -- Homebrew on Intel or manual install
-            '--ngProbeLocations',
-            '/opt/homebrew/lib/node_modules',
-            '/usr/local/lib/node_modules',
-          },
-          on_new_config = function(new_config, new_root_dir)
-            -- Additional configuration to help Angular LSP find TypeScript
-            local util = require 'lspconfig.util'
+         -- Angular Language Server with proper TypeScript setup
+         {
+           name = 'angularls',
+           config = {
+             filetypes = { 'typescript', 'html', 'typescriptreact', 'typescript.tsx', 'htmlangular' },
+             cmd = {
+               'ngserver',
+               '--stdio',
+               '--tsProbeLocations',
+               '/opt/homebrew/lib/node_modules',
+               '/usr/local/lib/node_modules',
+               '--ngProbeLocations',
+               '/opt/homebrew/lib/node_modules',
+               '/usr/local/lib/node_modules',
+             },
+           },
+         },
 
-            -- Try to find node_modules with TypeScript in the project
-            local project_node_modules = util.path.join(new_root_dir, 'node_modules')
-            if vim.fn.isdirectory(project_node_modules) == 1 then
-              new_config.cmd = {
-                'ngserver',
-                '--stdio',
-                '--tsProbeLocations',
-                project_node_modules,
-                '/opt/homebrew/lib/node_modules',
-                '/usr/local/lib/node_modules',
-                '--ngProbeLocations',
-                project_node_modules,
-                '/opt/homebrew/lib/node_modules',
-                '/usr/local/lib/node_modules',
-              }
-            end
-          end,
-        },
-
-        -- Lua Language Server
-        lua_ls = {
-          settings = {
-            Lua = {
-              completion = {
-                callSnippet = 'Replace',
+          -- Lua Language Server
+          {
+            name = 'lua_ls',
+            config = {
+              settings = {
+                Lua = {
+                  completion = {
+                    callSnippet = 'Replace',
+                  },
+                },
               },
             },
           },
-        },
+        }
 
-        -- C# Language Server
-        csharp_ls = {},
-      }
 
-      -- Setup LSP servers manually
-      local lspconfig = require 'lspconfig'
-      for server_name, server_config in pairs(servers) do
-        server_config.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server_config.capabilities or {})
-        lspconfig[server_name].setup(server_config)
-      end
+
+       -- Setup LSP servers using the new vim.lsp.config API
+       local server_names = {}
+       for _, server_entry in ipairs(servers) do
+         local server_name = server_entry.name
+         local server_config = server_entry.config
+         server_config.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server_config.capabilities or {})
+         vim.lsp.config(server_name, server_config)
+         table.insert(server_names, server_name)
+       end
+       -- Enable all configured LSP servers
+       vim.lsp.enable(server_names)
     end,
+  },
+
+  -- Roslyn LSP for C#/.NET
+  {
+    'seblyng/roslyn.nvim',
+    ft = 'cs',
+    opts = {},
   },
 
   -- LSP Saga for better UI
