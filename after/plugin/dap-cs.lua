@@ -1,0 +1,122 @@
+local M = {}
+
+M.netcoredbg_path = '/usr/local/netcoredbg'
+
+function M.get_dotnet_dll()
+  local cwd = vim.fn.getcwd()
+  local csproj_files = vim.fn.glob(cwd .. '/*.csproj', false, true)
+  
+  if #csproj_files == 0 then
+    return vim.fn.input('Path to dll: ', cwd .. '/bin/Debug/', 'file')
+  end
+  
+  local csproj = csproj_files[1]
+  local project_name = vim.fn.fnamemodify(csproj, ':t:r')
+  
+  local content = vim.fn.readfile(csproj)
+  local framework = nil
+  for _, line in ipairs(content) do
+    local match = line:match('<TargetFramework>([^<]+)</TargetFramework>')
+    if match then
+      framework = match
+      break
+    end
+  end
+  
+  if not framework then
+    local bin_dir = cwd .. '/bin/Debug/'
+    local frameworks = vim.fn.glob(bin_dir .. 'net*', false, true)
+    if #frameworks > 0 then
+      framework = vim.fn.fnamemodify(frameworks[1], ':t')
+    end
+  end
+  
+  if framework then
+    local dll = cwd .. '/bin/Debug/' .. framework .. '/' .. project_name .. '.dll'
+    if vim.fn.filereadable(dll) == 1 then
+      return dll
+    end
+  end
+  
+  return vim.fn.input('Path to dll: ', cwd .. '/bin/Debug/', 'file')
+end
+
+function M.setup()
+  local dap = require('dap')
+  
+  dap.adapters.coreclr = {
+    type = 'executable',
+    command = M.netcoredbg_path,
+    args = { '--interpreter=vscode' },
+  }
+  
+  dap.configurations.cs = {
+    {
+      type = 'coreclr',
+      name = 'launch - netcoredbg',
+      request = 'launch',
+      program = M.get_dotnet_dll,
+      cwd = '${workspaceFolder}',
+      console = 'integratedTerminal',
+      stopOnEntry = false,
+    },
+    {
+      type = 'coreclr',
+      name = 'attach - netcoredbg',
+      request = 'attach',
+      processId = function()
+        local utils = require('dap.utils')
+        return utils.pick_process({ filter = 'dotnet' })
+      end,
+    },
+  }
+  
+  vim.keymap.set('n', '<leader>dc', function()
+    if require('dap').session() then
+      require('dap').continue()
+    else
+      local dll = M.get_dotnet_dll()
+      require('dap').run({
+        type = 'coreclr',
+        name = 'launch - netcoredbg',
+        request = 'launch',
+        program = dll,
+        cwd = vim.fn.getcwd(),
+        console = 'integratedTerminal',
+        stopOnEntry = false,
+      })
+    end
+  end, { desc = '[D]AP [C]ontinue / Launch .NET' })
+  
+  vim.keymap.set('n', '<leader>db', require('dap').toggle_breakpoint, { desc = '[D]AP Toggle [B]reakpoint' })
+  vim.keymap.set('n', '<leader>dB', function()
+    require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: '))
+  end, { desc = '[D]AP Conditional [B]reakpoint' })
+  vim.keymap.set('n', '<leader>dlp', function()
+    require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: '))
+  end, { desc = '[D]AP [L]og [P]oint' })
+  vim.keymap.set('n', '<leader>do', require('dap').step_over, { desc = '[D]AP Step [O]ver' })
+  vim.keymap.set('n', '<leader>di', require('dap').step_into, { desc = '[D]AP Step [I]nto' })
+  vim.keymap.set('n', '<leader>dO', require('dap').step_out, { desc = '[D]AP Step [O]ut' })
+  vim.keymap.set('n', '<leader>dR', require('dap').restart, { desc = '[D]AP [R]estart' })
+  vim.keymap.set('n', '<leader>dS', require('dap').terminate, { desc = '[D]AP [S]top' })
+  vim.keymap.set('n', '<leader>du', require('dapui').toggle, { desc = '[D]AP [U]I Toggle' })
+  vim.keymap.set('n', '<leader>dr', require('dap').repl.toggle, { desc = '[D]AP [R]EPL Toggle' })
+  vim.keymap.set('n', '<leader>dj', function()
+    require('dap').down()
+  end, { desc = '[D]AP Down Stack' })
+  vim.keymap.set('n', '<leader>dk', function()
+    require('dap').up()
+  end, { desc = '[D]AP Up Stack' })
+  vim.keymap.set('n', '<leader>dlr', function()
+    require('dap').run_last()
+  end, { desc = '[D]AP [L]ast [R]un' })
+  vim.keymap.set('n', '<leader>de', function()
+    require('dapui').eval()
+  end, { desc = '[D]AP [E]val' })
+  vim.keymap.set('v', '<leader>de', function()
+    require('dapui').eval()
+  end, { desc = '[D]AP [E]val Selection' })
+end
+
+vim.defer_fn(M.setup, 100)
