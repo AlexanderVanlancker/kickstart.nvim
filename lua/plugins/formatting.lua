@@ -35,7 +35,7 @@ return {
     -- Define formatters for each language
     formatters_by_ft = {
       lua = { 'stylua' },
-      cs = { 'csharpier' },
+      -- cs uses LSP formatting (Roslyn) instead of csharpier to match Rider's formatter
       typescript = { 'prettierd', 'prettier', stop_after_first = true },
       javascript = { 'prettierd', 'prettier', stop_after_first = true },
       typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
