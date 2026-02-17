@@ -18,10 +18,8 @@ return {
     },
     opts = {
       keymap = {
-        -- Use 'default' preset (Ctrl+Y to accept)
-        -- Or 'super-tab' (Tab to accept)
-        -- Or 'enter' (Enter to accept)
-        preset = 'default',
+        -- Use 'super-tab' (Tab to accept)
+        preset = 'super-tab',
 
         -- All presets include:
         -- Tab/Shift-Tab: move through snippet placeholders

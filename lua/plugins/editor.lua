@@ -19,6 +19,19 @@ return {
     },
   },
 
+  -- Git diff viewer
+  {
+    'sindrets/diffview.nvim',
+    dependencies = 'nvim-lua/plenary.nvim',
+    keys = {
+      { '<leader>gd', '<cmd>DiffviewOpen<cr>', desc = '[G]it [D]iff View' },
+      { '<leader>gh', '<cmd>DiffviewFileHistory<cr>', desc = '[G]it File [H]istory' },
+      { '<leader>gH', '<cmd>DiffviewFileHistory %<cr>', desc = '[G]it Current File [H]istory' },
+      { '<leader>gc', '<cmd>DiffviewClose<cr>', desc = '[G]it Diff [C]lose' },
+    },
+    opts = {},
+  },
+
   -- Highlight TODO comments
   {
     'folke/todo-comments.nvim',
