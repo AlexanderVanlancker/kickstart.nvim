@@ -74,6 +74,32 @@ function M.setup()
     },
     {
       type = 'coreclr',
+      name = 'launch - Intigriti.BFF',
+      request = 'launch',
+      program = '/Users/Alexander/intigriti/bff/Intigriti.BFF.Proxy/bin/Debug/net10.0/Intigriti.BFF.Proxy.dll',
+      cwd = '/Users/Alexander/intigriti/bff/Intigriti.BFF.Proxy',
+      env = {
+        ASPNETCORE_ENVIRONMENT = 'Local',
+        ASPNETCORE_URLS = 'https://localhost:9999'
+      },
+      console = 'integratedTerminal',
+      stopOnEntry = false,
+    },
+    {
+      type = 'coreclr',
+      name = 'launch - Intigriti.Identity',
+      request = 'launch',
+      program = '/Users/Alexander/Intigriti/identity/Intigriti.Identity.Application/bin/Debug/net10.0/Intigriti.Identity.Application.dll',
+      cwd = '/Users/Alexander/Intigriti/identity/Intigriti.Identity.Application',
+      env = {
+        ASPNETCORE_ENVIRONMENT = 'Local',
+        ASPNETCORE_URLS = 'https://localhost:7000;https://localhost:7001',
+      },
+      console = 'integratedTerminal',
+      stopOnEntry = false,
+    },
+    {
+      type = 'coreclr',
       name = 'attach - netcoredbg',
       request = 'attach',
       processId = function()
@@ -88,6 +114,24 @@ function M.setup()
       processId = function()
         local utils = require('dap.utils')
         return utils.pick_process({ filter = 'Intigriti.Core.Api' })
+      end,
+    },
+    {
+      type = 'coreclr',
+      name = 'attach - Intigriti.Identity',
+      request = 'attach',
+      processId = function()
+        local utils = require('dap.utils')
+        return utils.pick_process({ filter = 'Intigriti.Identity' })
+      end,
+    },
+    {
+      type = 'coreclr',
+      name = 'attach - Intigriti.BFF',
+      request = 'attach',
+      processId = function()
+        local utils = require('dap.utils')
+        return utils.pick_process({ filter = 'Intigriti.BFF' })
       end,
     },
   }
@@ -106,8 +150,34 @@ function M.setup()
     })
   end, { desc = '[D]AP [C]ompile API' })
   
-  vim.keymap.set('n', '<leader>db', require('dap').toggle_breakpoint, { desc = '[D]AP Toggle [B]reakpoint' })
+  vim.keymap.set('n', '<leader>dI', function()
+    vim.fn.jobstart('dotnet build /Users/Alexander/Intigriti/identity/Intigriti.Identity.Application', {
+      cwd = vim.fn.getcwd(),
+      on_exit = function(_, code)
+        if code == 0 then
+          vim.notify('Identity Build succeeded', vim.log.levels.INFO)
+        else
+          vim.notify('Identity Build failed', vim.log.levels.ERROR)
+        end
+      end,
+    })
+  end, { desc = '[D]AP [I]dentity Compile' })
+  
   vim.keymap.set('n', '<leader>dB', function()
+    vim.fn.jobstart('dotnet build /Users/Alexander/intigriti/bff/Intigriti.BFF.Proxy', {
+      cwd = vim.fn.getcwd(),
+      on_exit = function(_, code)
+        if code == 0 then
+          vim.notify('BFF Build succeeded', vim.log.levels.INFO)
+        else
+          vim.notify('BFF Build failed', vim.log.levels.ERROR)
+        end
+      end,
+    })
+  end, { desc = '[D]AP [B]FF Compile' })
+  
+  vim.keymap.set('n', '<leader>db', require('dap').toggle_breakpoint, { desc = '[D]AP Toggle [B]reakpoint' })
+  vim.keymap.set('n', '<leader>dK', function()
     require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: '))
   end, { desc = '[D]AP Conditional [B]reakpoint' })
   vim.keymap.set('n', '<leader>dlp', function()
