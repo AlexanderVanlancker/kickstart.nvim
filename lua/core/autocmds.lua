@@ -36,13 +36,26 @@ local function apply_transparency()
     'PmenuThumb',
   }
   for _, group in ipairs(highlights) do
-    vim.api.nvim_set_hl(0, group, { bg = 'none', ctermbg = 'none' })
+    local current = vim.api.nvim_get_hl(0, { name = group })
+    local opts = { bg = 'none', ctermbg = 'none' }
+    if current.fg then
+      opts.fg = current.fg
+    end
+    vim.api.nvim_set_hl(0, group, opts)
   end
 end
 
-vim.api.nvim_create_autocmd({ 'ColorScheme', 'VimEnter' }, {
+vim.api.nvim_create_autocmd({ 'ColorScheme' }, {
   desc = 'Force transparency for all colorschemes',
   group = vim.api.nvim_create_augroup('force-transparency', { clear = true }),
+  callback = function()
+    vim.schedule(apply_transparency)
+  end,
+})
+
+vim.api.nvim_create_autocmd('VimEnter', {
+  desc = 'Force transparency on startup',
+  group = vim.api.nvim_create_augroup('force-transparency-vimenter', { clear = true }),
   callback = apply_transparency,
 })
 
@@ -97,9 +110,17 @@ local function apply_pastel_highlights()
   end
 end
 
-vim.api.nvim_create_autocmd({ 'ColorScheme', 'VimEnter' }, {
+vim.api.nvim_create_autocmd('ColorScheme', {
   desc = 'Apply custom pastel highlights',
   group = vim.api.nvim_create_augroup('pastel-highlights', { clear = true }),
+  callback = function()
+    vim.schedule(apply_pastel_highlights)
+  end,
+})
+
+vim.api.nvim_create_autocmd('VimEnter', {
+  desc = 'Apply custom pastel highlights on startup',
+  group = vim.api.nvim_create_augroup('pastel-highlights-vimenter', { clear = true }),
   callback = apply_pastel_highlights,
 })
 
