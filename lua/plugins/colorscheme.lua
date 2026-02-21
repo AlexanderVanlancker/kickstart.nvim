@@ -21,6 +21,27 @@ return {
     lazy = true,
   },
   {
+    'maxmx03/fluoromachine.nvim',
+    lazy = true,
+    priority = 1000,
+  },
+  {
+    'shaunsingh/moonlight.nvim',
+    lazy = true,
+    priority = 1000,
+  },
+  {
+    'sainnhe/gruvbox-material',
+    lazy = true,
+    priority = 1000,
+  },
+  {
+    'rose-pine/neovim',
+    name = 'rose-pine',
+    lazy = true,
+    priority = 1000,
+  },
+  {
     -- Everforest: warm, nature-inspired colorscheme
     'sainnhe/everforest',
     lazy = true,
@@ -94,6 +115,16 @@ return {
           { name = 'Natsuki Light', colorscheme = 'natsuki_light' },
           { name = 'Sayori Light', colorscheme = 'sayori_light' },
           { name = 'Yuri Light', colorscheme = 'yuri_light' },
+          -- Fluoromachine
+          { name = 'Fluoromachine', colorscheme = 'fluoromachine' },
+          -- Moonlight
+          { name = 'Moonlight', colorscheme = 'moonlight' },
+          -- Gruvbox Material
+          { name = 'Gruvbox Material', colorscheme = 'gruvbox-material' },
+          -- Rose Pine
+          { name = 'Rose Pine', colorscheme = 'rose-pine' },
+          { name = 'Rose Pine Moon', colorscheme = 'rose-pine-moon' },
+          { name = 'Rose Pine Dawn', colorscheme = 'rose-pine-dawn' },
         },
       }
     end,
