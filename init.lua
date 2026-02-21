@@ -34,4 +34,5 @@
 require('core.options')   -- Basic Neovim settings
 require('core.keymaps')   -- Keyboard shortcuts
 require('core.autocmds')  -- Automatic commands
+require('core.neovide')   -- Neovide specific configuration
 require('core.lazy')      -- Plugin manager (loads all plugins from lua/plugins/)

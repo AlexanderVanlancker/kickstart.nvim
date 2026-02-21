@@ -20,25 +20,99 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
   end,
 })
 
--- Focus main window on startup (not explorer sidebar)
-vim.api.nvim_create_autocmd('VimEnter', {
-  desc = 'Focus main window instead of explorer on startup',
-  group = vim.api.nvim_create_augroup('focus-main-window', { clear = true }),
+-- Force transparency for all colorschemes
+local function apply_transparency()
+  local highlights = {
+    'Normal',
+    'NormalNC',
+    'NormalFloat',
+    'FloatBorder',
+    'SignColumn',
+    'EndOfBuffer',
+    'MsgArea',
+    'Pmenu',
+    'PmenuSel',
+    'PmenuSbar',
+    'PmenuThumb',
+  }
+  for _, group in ipairs(highlights) do
+    vim.api.nvim_set_hl(0, group, { bg = 'none', ctermbg = 'none' })
+  end
+end
+
+vim.api.nvim_create_autocmd({ 'ColorScheme', 'VimEnter' }, {
+  desc = 'Force transparency for all colorschemes',
+  group = vim.api.nvim_create_augroup('force-transparency', { clear = true }),
+  callback = apply_transparency,
+})
+
+-- Custom pastel highlights (pink + lavender + mint)
+local function apply_pastel_highlights()
+  local colors = {
+    pink = '#f5c2e7',
+    lavender = '#b4befe',
+    mint = '#a6e3a1',
+  }
+
+  local highlights = {
+    -- Search
+    Search = { bg = colors.pink, fg = '#1e1e2e' },
+    IncSearch = { bg = colors.mint, fg = '#1e1e2e' },
+    CurSearch = { bg = colors.pink, fg = '#1e1e2e' },
+
+    -- Visual selection
+    Visual = { bg = colors.lavender, fg = '#1e1e2e' },
+
+    -- Cursor line
+    CursorLine = { bg = '#2a2a3e' },
+    CursorLineNr = { fg = colors.pink, bold = true },
+
+    -- Popup menu
+    PmenuSel = { bg = colors.pink, fg = '#1e1e2e' },
+
+    -- Diagnostics
+    DiagnosticError = { fg = colors.pink },
+    DiagnosticWarn = { fg = colors.lavender },
+    DiagnosticInfo = { fg = colors.mint },
+    DiagnosticHint = { fg = colors.lavender },
+
+    -- Git
+    GitSignsAdd = { fg = colors.mint },
+    GitSignsChange = { fg = colors.lavender },
+    GitSignsDelete = { fg = colors.pink },
+
+    -- Telescope
+    TelescopeSelection = { bg = colors.pink, fg = '#1e1e2e' },
+    TelescopeMatching = { fg = colors.mint, bold = true },
+    TelescopeBorder = { fg = colors.lavender },
+
+    -- Which-key
+    WhichKey = { fg = colors.pink },
+    WhichKeyDesc = { fg = colors.lavender },
+    WhichKeySeparator = { fg = colors.mint },
+  }
+
+  for group, opts in pairs(highlights) do
+    vim.api.nvim_set_hl(0, group, opts)
+  end
+end
+
+vim.api.nvim_create_autocmd({ 'ColorScheme', 'VimEnter' }, {
+  desc = 'Apply custom pastel highlights',
+  group = vim.api.nvim_create_augroup('pastel-highlights', { clear = true }),
+  callback = apply_pastel_highlights,
+})
+
+-- Create a cute notification when you save
+vim.api.nvim_create_autocmd("BufWritePost", {
+  desc = "Notify on file save",
+  group = vim.api.nvim_create_augroup('save-notify', { clear = true }),
   callback = function()
-    -- Delay to ensure all plugins are loaded
-    vim.defer_fn(function()
-      -- Find the first normal buffer window (not explorer, not special buffers)
-      for _, win in ipairs(vim.api.nvim_list_wins()) do
-        local buf = vim.api.nvim_win_get_buf(win)
-        local buftype = vim.api.nvim_get_option_value('buftype', { buf = buf })
-        local filetype = vim.api.nvim_get_option_value('filetype', { buf = buf })
-        
-        -- Focus the first normal buffer (not explorer/terminal/special buffers)
-        if buftype == '' and filetype ~= 'snacks_explorer' then
-          vim.api.nvim_set_current_win(win)
-          return
-        end
-      end
-    end, 10) -- Small delay to ensure plugins are fully initialized
+    if _G.Snacks then
+      Snacks.notifier.notify("Saved! ✨ ฅ^•ﻌ•^ฅ", "info", {
+        style = "compact",
+        icon = "🐾",
+      })
+    end
   end,
 })

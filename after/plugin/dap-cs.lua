@@ -41,6 +41,42 @@ function M.get_dotnet_dll()
   return vim.fn.input('Path to dll: ', cwd .. '/bin/Debug/', 'file')
 end
 
+function M.build_project(project_path, project_name)
+  vim.notify('Building ' .. project_name .. '...', vim.log.levels.INFO)
+  
+  local build_output = {}
+  local job_id = vim.fn.jobstart('dotnet build', {
+    cwd = project_path,
+    stdout_buffered = true,
+    stderr_buffered = true,
+    on_stdout = function(_, data)
+      if data then
+        vim.list_extend(build_output, data)
+      end
+    end,
+    on_stderr = function(_, data)
+      if data then
+        vim.list_extend(build_output, data)
+      end
+    end,
+  })
+  
+  local exit_code = vim.fn.jobwait({job_id}, 30000)[1]
+  
+  if exit_code == 0 then
+    vim.notify(project_name .. ' build succeeded', vim.log.levels.INFO)
+    return true
+  else
+    vim.notify(project_name .. ' build failed', vim.log.levels.ERROR)
+    vim.fn.setqflist({}, 'r', {
+      title = project_name .. ' Build Errors',
+      lines = build_output,
+    })
+    vim.cmd('copen')
+    return false
+  end
+end
+
 function M.setup()
   local dap = require('dap')
   
@@ -64,7 +100,12 @@ function M.setup()
       type = 'coreclr',
       name = 'launch - Intigriti.Core.Api',
       request = 'launch',
-      program = '${workspaceFolder}/Api/Intigriti.Core.Api/bin/Debug/net10.0/Intigriti.Core.Api.dll',
+      program = function()
+        if not M.build_project('${workspaceFolder}/Api/Intigriti.Core.Api', 'Core.Api') then
+          return nil
+        end
+        return '${workspaceFolder}/Api/Intigriti.Core.Api/bin/Debug/net10.0/Intigriti.Core.Api.dll'
+      end,
       cwd = '${workspaceFolder}/Api/Intigriti.Core.Api',
       env = {
         ASPNETCORE_ENVIRONMENT = 'Local',
@@ -76,7 +117,12 @@ function M.setup()
       type = 'coreclr',
       name = 'launch - Intigriti.BFF',
       request = 'launch',
-      program = '/Users/Alexander/intigriti/bff/Intigriti.BFF.Proxy/bin/Debug/net10.0/Intigriti.BFF.Proxy.dll',
+      program = function()
+        if not M.build_project('/Users/Alexander/intigriti/bff/Intigriti.BFF.Proxy', 'BFF') then
+          return nil
+        end
+        return '/Users/Alexander/intigriti/bff/Intigriti.BFF.Proxy/bin/Debug/net10.0/Intigriti.BFF.Proxy.dll'
+      end,
       cwd = '/Users/Alexander/intigriti/bff/Intigriti.BFF.Proxy',
       env = {
         ASPNETCORE_ENVIRONMENT = 'Local',
@@ -89,7 +135,12 @@ function M.setup()
       type = 'coreclr',
       name = 'launch - Intigriti.Identity',
       request = 'launch',
-      program = '/Users/Alexander/Intigriti/identity/Intigriti.Identity.Application/bin/Debug/net10.0/Intigriti.Identity.Application.dll',
+      program = function()
+        if not M.build_project('/Users/Alexander/Intigriti/identity/Intigriti.Identity.Application', 'Identity') then
+          return nil
+        end
+        return '/Users/Alexander/Intigriti/identity/Intigriti.Identity.Application/bin/Debug/net10.0/Intigriti.Identity.Application.dll'
+      end,
       cwd = '/Users/Alexander/Intigriti/identity/Intigriti.Identity.Application',
       env = {
         ASPNETCORE_ENVIRONMENT = 'Local',

@@ -1,6 +1,9 @@
 -- Core Keymaps
 -- This file contains all basic key mappings that don't depend on plugins
 
+-- Save file with Ctrl+s
+vim.keymap.set({ 'n', 'i' }, '<C-s>', '<cmd>w<CR>', { desc = 'Save file' })
+
 -- Clear search highlighting with Esc in normal mode
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 

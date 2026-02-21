@@ -44,20 +44,119 @@ return {
   {
     'echasnovski/mini.nvim',
     config = function()
-      -- Better text objects (like "around" and "inside")
       require('mini.ai').setup { n_lines = 500 }
-
-      -- Add/delete/replace surroundings (brackets, quotes, etc.)
       require('mini.surround').setup()
+    end,
+  },
 
-      -- Simple statusline
-      local statusline = require 'mini.statusline'
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+  -- Lualine: Fast and beautiful statusline
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    event = 'VeryLazy',
+    opts = function()
+      local colors = {
+        pink = '#f5c2e7',
+        lavender = '#b4befe',
+        mint = '#a6e3a1',
+        bg = 'transparent',
+        fg = '#cdd6f4',
+        dark = '#1e1e2e',
+      }
 
-      -- Custom statusline location format
-      statusline.section_location = function()
-        return '%2l:%-2v'
+      local mode_colors = {
+        n = colors.pink,
+        i = colors.mint,
+        v = colors.lavender,
+        V = colors.lavender,
+        ['\22'] = colors.lavender,
+        c = colors.pink,
+        R = colors.lavender,
+        s = colors.mint,
+        S = colors.mint,
+        ['\19'] = colors.mint,
+      }
+
+      local function mode_color()
+        local m = vim.fn.mode()
+        return mode_colors[m] or colors.pink
       end
+
+      return {
+        options = {
+          theme = 'auto',
+          globalstatus = true,
+          component_separators = { left = '', right = '' },
+          section_separators = { left = '', right = '' },
+          transparent = true,
+        },
+        sections = {
+          lualine_a = {
+            {
+              'mode',
+              color = function() return { bg = mode_color(), fg = colors.dark, gui = 'bold' } end,
+              padding = { left = 1, right = 1 },
+            },
+          },
+          lualine_b = {
+            {
+              'filetype',
+              icon_only = true,
+              separator = '',
+              padding = { left = 1, right = 0 },
+              color = { fg = colors.lavender },
+            },
+            {
+              'filename',
+              path = 1,
+              symbols = { modified = ' ●', readonly = ' ', unnamed = '' },
+              color = { fg = colors.fg },
+            },
+          },
+          lualine_c = {
+            {
+              'branch',
+              icon = ' ',
+              color = { fg = colors.mint },
+            },
+            {
+              'diff',
+              symbols = { added = ' ', modified = ' ', removed = ' ' },
+              colored = true,
+              diff_color = {
+                added = { fg = colors.mint },
+                modified = { fg = colors.lavender },
+                removed = { fg = colors.pink },
+              },
+            },
+          },
+          lualine_x = {
+            {
+              'diagnostics',
+              symbols = { error = ' ', warn = ' ', info = ' ', hint = '󰌵 ' },
+              diagnostics_color = {
+                error = { fg = colors.pink },
+                warn = { fg = colors.lavender },
+                info = { fg = colors.mint },
+                hint = { fg = colors.lavender },
+              },
+            },
+          },
+          lualine_y = {
+            {
+              'progress',
+              color = { fg = colors.lavender },
+            },
+          },
+          lualine_z = {
+            {
+              'location',
+              color = { bg = colors.pink, fg = colors.dark, gui = 'bold' },
+              padding = { left = 1, right = 1 },
+            },
+          },
+        },
+      }
     end,
   },
 

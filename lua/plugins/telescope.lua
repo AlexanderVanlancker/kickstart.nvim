@@ -50,6 +50,21 @@ return {
     pcall(require('telescope').load_extension, 'fzf')
     pcall(require('telescope').load_extension, 'ui-select')
 
+    -- Fix Telescope highlights for transparency
+    local function fix_telescope_highlights()
+      vim.api.nvim_set_hl(0, 'TelescopeNormal', { bg = 'none' })
+      vim.api.nvim_set_hl(0, 'TelescopeBorder', { bg = 'none' })
+      vim.api.nvim_set_hl(0, 'TelescopePreviewNormal', { bg = 'none' })
+      vim.api.nvim_set_hl(0, 'TelescopeResultsNormal', { bg = 'none' })
+      vim.api.nvim_set_hl(0, 'TelescopePromptNormal', { bg = 'none' })
+    end
+
+    vim.api.nvim_create_autocmd('ColorScheme', {
+      pattern = '*',
+      callback = fix_telescope_highlights,
+    })
+    fix_telescope_highlights()
+
     -- Keymaps
     local builtin = require 'telescope.builtin'
     vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
@@ -62,6 +77,7 @@ return {
     vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
     vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files' })
     vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = 'Find existing buffers' })
+    vim.keymap.set('n', '<leader>sc', '<cmd>Themery<cr>', { desc = '[S]earch [C]olorscheme' })
 
     -- Search in current buffer
     vim.keymap.set('n', '<leader>/', function()
